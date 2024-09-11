@@ -15,3 +15,5 @@ include_directories(
 
 add_executable(laser_scan_obstacle_detection src/laser_scan_obstacle_detection.cpp)
 target_link_libraries(laser_scan_obstacle_detection ${catkin_LIBRARIES})
+add_executable(laser_scan_obstacle_detection_2xcamera src/laser_scan_obstacle_detection_2xcamera.cpp)
+target_link_libraries(laser_scan_obstacle_detection_2xcamera ${catkin_LIBRARIES})
