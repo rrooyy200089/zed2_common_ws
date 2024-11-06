@@ -120,6 +120,9 @@ Function: Publish the odometer topic, Contains position, attitude, triaxial velo
 ***************************************/
 void turn_on_robot::Publish_Odom()
 {
+
+    static tf::TransformBroadcaster odom_broadcaster;
+    static geometry_msgs::TransformStamped odom_trans;
     //Convert the Z-axis rotation Angle into a quaternion for expression 
     //把Z轴转角转换为四元数进行表达
     geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(Robot_Pos.Z);
@@ -129,7 +132,7 @@ void turn_on_robot::Publish_Odom()
     odom.header.frame_id = odom_frame_id; // Odometer TF parent coordinates //里程计TF父坐标
     odom.pose.pose.position.x = Robot_Pos.X; //Position //位置
     odom.pose.pose.position.y = Robot_Pos.Y;
-    odom.pose.pose.position.z = Robot_Pos.Z;
+    odom.pose.pose.position.z = 0.0f;
     odom.pose.pose.orientation = odom_quat; //Posture, Quaternion converted by Z-axis rotation //姿态，通过Z轴转角转换的四元数
 
     odom.child_frame_id = robot_frame_id; // Odometer TF subcoordinates //里程计TF子坐标
@@ -150,6 +153,16 @@ void turn_on_robot::Publish_Odom()
       memcpy(&odom.pose.covariance, odom_pose_covariance, sizeof(odom_pose_covariance)),
       memcpy(&odom.twist.covariance, odom_twist_covariance, sizeof(odom_twist_covariance));       
     odom_publisher.publish(odom); //Pub odometer topic //发布里程计话题
+
+    // 發布TF
+    odom_trans.header.stamp = _Now;
+    odom_trans.header.frame_id = odom_frame_id;
+    odom_trans.child_frame_id = robot_frame_id;
+    odom_trans.transform.translation.x = Robot_Pos.X;
+    odom_trans.transform.translation.y = Robot_Pos.Y;
+    odom_trans.transform.translation.z = 0.0f;
+    odom_trans.transform.rotation = odom_quat;
+    odom_broadcaster.sendTransform(odom_trans);
 }
 /**************************************
 Date: January 28, 2021
