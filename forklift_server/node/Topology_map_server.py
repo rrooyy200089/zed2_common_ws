@@ -192,6 +192,7 @@ class TopologyMapAction():
         self.Navigation = Navigation()
         self._as = actionlib.SimpleActionServer(self._action_name, forklift_server.msg.TopologyMapAction, execute_cb=self.execute_cb, auto_start = False)
         self._as.start()
+        self.before_goal = ''  # 此變數是用來紀錄之前的目標導航點
 
     def init_param(self):
         global waypoints
@@ -211,7 +212,7 @@ class TopologyMapAction():
             elif msg.target_name != "":
                 path = [msg.target_name]
 
-            for i in range(len(path)):
+            for i in range((1 if path[0] == self.before_goal else 0), len(path)):  # 判斷之前的目標導航點與本次路徑規劃的第一個導航點是否是同一個，如果是就會跳過路徑規劃的第一個導航點，否則就會路徑規劃器到規劃的第一個導航點
                 rospy.sleep(1.0)
                 if (i > 0 and (waypoints[path[i]][0] == waypoints[path[i-1]][0] and waypoints[path[i]][1] == waypoints[path[i-1]][1])):
                     rospy.loginfo('self_spin from %s to %s' %
@@ -251,6 +252,7 @@ class TopologyMapAction():
             self.last_target_pose.orientation.w = orienw
         
         rospy.logwarn('TopologyMap Succeeded')
+        self.before_goal = msg.goal  # 紀錄之前所發布的目標導航點
         self._result.result = 'success'
         self._as.set_succeeded(self._result)
 
