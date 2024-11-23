@@ -75,24 +75,66 @@ class TopologyMap():
         path.reverse()  
         return path
 
+# class SubscriberPose():
+#     def __init__(self):
+#         rospy.Subscriber("/robot_pose", Pose, self.get_pose, queue_size=1)
+
+#     def get_pose(self, msg):
+#         self.rz, self.rw = msg.orientation.z, msg.orientation.w
+#         yaw_r = math.atan2(2 * self.rw * self.rz, self.rw * self.rw - self.rz * self.rz)
+#         if(yaw_r < 0):
+#             yaw_r = yaw_r + 2 * math.pi
+
+#         if(self.trigger == False):
+#             self.pre_odom = yaw_r
+#             self.odom_pass = 0.0
+#             self.trigger = True
+#         if(abs(yaw_r - self.pre_odom) > 1):
+#             self.odom_pass = self.odom_pass
+#         else:
+#             self.odom_pass = self.odom_pass + yaw_r - self.pre_odom
+#         self.pre_odom = yaw_r
+
+
 class Navigation():
     def __init__(self):
         odom = rospy.get_param(rospy.get_name() + "/odom", "/wheel_odom")
         self.client = actionlib.SimpleActionClient('move_base',MoveBaseAction)
         self.client.wait_for_server()
-        self.sub_odom_robot = rospy.Subscriber(odom, Odometry, self.cbGetRobotOdom, queue_size = 1)
+        # self.sub_odom_robot = rospy.Subscriber(odom, Odometry, self.cbGetRobotOdom, queue_size = 1)
         self.cmd_pub = rospy.Publisher('/cmd_vel', Twist, queue_size = 1)
+        rospy.Subscriber("/robot_pose", Pose, self.get_pose, queue_size=1)
+        # self.listener = tf.TransformListener()
         self.init_param()
 
-    def get_map_to_base_xyzw(self):
-        listener = tf.TransformListener()
-        while not rospy.is_shutdown():
-            try:
-                listener.waitForTransform('map', 'base_link', rospy.Time(0), rospy.Duration(1.0))
-                (trans, rot) = listener.lookupTransform('map', 'base_link', rospy.Time(0))
-                return trans[0], trans[1], rot[2], rot[3]
-            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:
-                return 0.0, 0.0, 0.0, 0.0
+    def get_pose(self, msg):
+        self.rz, self.rw = msg.orientation.z, msg.orientation.w
+        yaw_r = math.atan2(2 * self.rw * self.rz, self.rw * self.rw - self.rz * self.rz)
+        if(yaw_r < 0):
+            yaw_r = yaw_r + 2 * math.pi
+
+        if(self.trigger == False):
+            self.pre_odom = yaw_r
+            self.odom_pass = 0.0
+            self.trigger = True
+        if(abs(yaw_r - self.pre_odom) > 1):
+            self.odom_pass = self.odom_pass
+        else:
+            self.odom_pass = self.odom_pass + yaw_r - self.pre_odom
+        self.pre_odom = yaw_r
+
+
+    # def get_map_to_base_xyzw(self):
+    #     while not rospy.is_shutdown():
+    #         try:
+    #             listener = tf.TransformListener()
+    #             listener_time = rospy.Time(0)
+    #             listener.waitForTransform('map', 'base_link', listener_time, rospy.Duration(1.0))
+    #             # self.listener.waitForTransform('map', 'base_link', rospy.Time(0), rospy.Duration(1.0))
+    #             (trans, rot) = listener.lookupTransform('map', 'base_link', listener_time)
+    #             return trans[0], trans[1], rot[2], rot[3]
+    #         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:
+    #             return 0.0, 0.0, 0.0, 0.0
 
     def move(self, x, y, z, w):
         goal = MoveBaseGoal()
@@ -118,22 +160,22 @@ class Navigation():
         self.pre_odom = 0.0
         self.odom_pass = 0.0
     
-    def cbGetRobotOdom(self, msg):
-        # self.rz, self.rw = msg.pose.pose.orientation.z, msg.pose.pose.orientation.w
-        self.rz, self.rw = self.get_map_to_base_xyzw()[2], self.get_map_to_base_xyzw()[3]
-        yaw_r = math.atan2(2 * self.rw * self.rz, self.rw * self.rw - self.rz * self.rz)
-        if(yaw_r < 0):
-            yaw_r = yaw_r + 2 * math.pi
+    # def cbGetRobotOdom(self, msg):
+    #     # self.rz, self.rw = msg.pose.pose.orientation.z, msg.pose.pose.orientation.w
+    #     self.rz, self.rw = self.get_map_to_base_xyzw()[2], self.get_map_to_base_xyzw()[3]
+    #     yaw_r = math.atan2(2 * self.rw * self.rz, self.rw * self.rw - self.rz * self.rz)
+    #     if(yaw_r < 0):
+    #         yaw_r = yaw_r + 2 * math.pi
 
-        if(self.trigger == False):
-            self.pre_odom = yaw_r
-            self.odom_pass = 0.0
-            self.trigger = True
-        if(abs(yaw_r - self.pre_odom) > 1):
-            self.odom_pass = self.odom_pass
-        else:
-            self.odom_pass = self.odom_pass + yaw_r - self.pre_odom
-        self.pre_odom = yaw_r
+    #     if(self.trigger == False):
+    #         self.pre_odom = yaw_r
+    #         self.odom_pass = 0.0
+    #         self.trigger = True
+    #     if(abs(yaw_r - self.pre_odom) > 1):
+    #         self.odom_pass = self.odom_pass
+    #     else:
+    #         self.odom_pass = self.odom_pass + yaw_r - self.pre_odom
+    #     self.pre_odom = yaw_r
 
     def self_spin(self, z2, w2):
         # rospy.INFO('self_spin')
@@ -158,21 +200,21 @@ class Navigation():
         # print('desire_angle = ', desire_angle)
 
         speed = Twist()
-        while(abs(self.odom_pass) < abs(desire_angle)):
+        while(abs(self.odom_pass) < abs(desire_angle) - 0.1):
             # print("odom_pass", self.odom_pass*180/math.pi)
             if(desire_angle >= 0):
                 speed.angular.z = (desire_angle-self.odom_pass)*0.4
             elif(desire_angle <= 0):
                 speed.angular.z = (desire_angle-self.odom_pass)*0.4
 
-            if speed.angular.z > 0.35:
-                speed.angular.z = 0.35
-            elif speed.angular.z < -0.35:
-                speed.angular.z = -0.35
-            elif speed.angular.z > -0.2 and speed.angular.z < 0:
-                speed.angular.z = -0.2
-            elif speed.angular.z < 0.2 and speed.angular.z > 0:
-                speed.angular.z = 0.2
+            if speed.angular.z > 0.3:
+                speed.angular.z = 0.3
+            elif speed.angular.z < -0.3:
+                speed.angular.z = -0.3
+            elif speed.angular.z > -0.22 and speed.angular.z < 0:
+                speed.angular.z = -0.22
+            elif speed.angular.z < 0.22 and speed.angular.z > 0:
+                speed.angular.z = 0.22
             self.cmd_pub.publish(speed)
             rospy.sleep(0.01)
         
@@ -214,7 +256,7 @@ class TopologyMapAction():
 
             for i in range((1 if path[0] == self.before_goal else 0), len(path)):  # 判斷之前的目標導航點與本次路徑規劃的第一個導航點是否是同一個，如果是就會跳過路徑規劃的第一個導航點，否則就會路徑規劃器到規劃的第一個導航點
                 rospy.sleep(1.0)
-                if (i > 0 and (waypoints[path[i]][0] == waypoints[path[i-1]][0] and waypoints[path[i]][1] == waypoints[path[i-1]][1])):
+                if (i > 0 and (abs(waypoints[path[i]][0] - waypoints[path[i-1]][0]) < 1.0 and abs(waypoints[path[i]][1] - waypoints[path[i-1]][1]) < 1.0)):
                     rospy.loginfo('self_spin from %s to %s' %
                                   (path[i-1], path[i]))
                     self._feedback.feedback = str('self_spin from %s to %s' %(path[i-1], path[i]))
