@@ -12,6 +12,7 @@ import tf2_ros
 import heapq
 import math
 import tf
+from std_msgs.msg import Bool
 
 
 
@@ -200,7 +201,7 @@ class Navigation():
         # print('desire_angle = ', desire_angle)
 
         speed = Twist()
-        while(abs(self.odom_pass) < abs(desire_angle) - 0.1):
+        while(abs(self.odom_pass) < abs(desire_angle) - 0.07):
             # print("odom_pass", self.odom_pass*180/math.pi)
             if(desire_angle >= 0):
                 speed.angular.z = (desire_angle-self.odom_pass)*0.4
@@ -233,6 +234,8 @@ class TopologyMapAction():
         self.TopologyMap = TopologyMap(self.start_node)      
         self.Navigation = Navigation()
         self._as = actionlib.SimpleActionServer(self._action_name, forklift_server.msg.TopologyMapAction, execute_cb=self.execute_cb, auto_start = False)
+        self.navigation_state_pub = rospy.Publisher('/NavigationState', Bool, queue_size = 1, latch=True)
+        self.navigation_state = Bool()
         self._as.start()
         self.before_goal = ''  # 此變數是用來紀錄之前的目標導航點
 
@@ -246,6 +249,7 @@ class TopologyMapAction():
         
 
     def execute_cb(self, msg):
+        self.navigation_state_pub.publish(True)
         rospy.loginfo('TopologyMap receive command : %s' % (msg))
         if msg.goal != "" or (msg.target_name != "" and msg.target_pose == None):
             if msg.goal != "":
@@ -293,6 +297,7 @@ class TopologyMapAction():
             self.last_target_pose.orientation.z = orienz
             self.last_target_pose.orientation.w = orienw
         
+        self.navigation_state_pub.publish(False)
         rospy.logwarn('TopologyMap Succeeded')
         self.before_goal = msg.goal  # 紀錄之前所發布的目標導航點
         self._result.result = 'success'
