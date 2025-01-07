@@ -242,7 +242,9 @@ class TopologyMapAction():
     def init_param(self):
         global waypoints
         global graph
-        self.start_node = rospy.get_param(rospy.get_name() + "/start_node", "LD3")
+        robot_reset = rospy.get_param("/robot_reset", False)
+        self.start_node = (rospy.get_param("/robot_goal", "P1")) if robot_reset else (rospy.get_param(rospy.get_name() + "/start_node", "LD3"))
+        # print(self.start_node)
         waypoints = rospy.get_param(rospy.get_name() + "/waypoints")
         graph = rospy.get_param(rospy.get_name() + "/graph")
         self.last_target_pose = None
