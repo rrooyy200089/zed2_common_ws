@@ -12,7 +12,7 @@ import tf2_ros
 import heapq
 import math
 import tf
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, String
 
 
 
@@ -235,7 +235,7 @@ class TopologyMapAction():
         self.Navigation = Navigation()
         self._as = actionlib.SimpleActionServer(self._action_name, forklift_server.msg.TopologyMapAction, execute_cb=self.execute_cb, auto_start = False)
         self.navigation_state_pub = rospy.Publisher('/NavigationState', Bool, queue_size = 1, latch=True)
-        self.navigation_state = Bool()
+        self.navigation_goal_info_pub = rospy.Publisher('/NavigationGoalInfo', String, queue_size=1, latch=True)
         self._as.start()
         self.before_goal = ''  # 此變數是用來紀錄之前的目標導航點
 
@@ -248,6 +248,7 @@ class TopologyMapAction():
         waypoints = rospy.get_param(rospy.get_name() + "/waypoints")
         graph = rospy.get_param(rospy.get_name() + "/graph")
         self.last_target_pose = None
+        self.robot_reset_mode = robot_reset
         
 
     def execute_cb(self, msg):
@@ -260,7 +261,7 @@ class TopologyMapAction():
             elif msg.target_name != "":
                 path = [msg.target_name]
 
-            for i in range((1 if path[0] == self.before_goal else 0), len(path)):  # 判斷之前的目標導航點與本次路徑規劃的第一個導航點是否是同一個，如果是就會跳過路徑規劃的第一個導航點，否則就會路徑規劃器到規劃的第一個導航點
+            for i in range((1 if path[0] == self.before_goal or self.robot_reset_mode else 0), len(path)):  # 判斷之前的目標導航點與本次路徑規劃的第一個導航點是否是同一個，或者是否是在重新啟動的模式，如果兩個其中一個為True，就會跳過路徑規劃的第一個導航點，否則就會依路徑規劃器到規劃的第一個導航點
                 rospy.sleep(1.0)
                 if (i > 0 and (abs(waypoints[path[i]][0] - waypoints[path[i-1]][0]) < 1.0 and abs(waypoints[path[i]][1] - waypoints[path[i-1]][1]) < 1.0)):
                     rospy.loginfo('self_spin from %s to %s' %
@@ -270,14 +271,17 @@ class TopologyMapAction():
                     # rospy.loginfo('self_spin from %s to %s' % (path[i-1], path[i]))
                     self.Navigation.self_spin(
                         waypoints[path[i]][2], waypoints[path[i]][3])
-                    i = i + 1
-                    continue
+                    # i = i + 1
+                    # continue
                 else:
                     rospy.loginfo('Navigation to %s' % path[i])
                     self._feedback.feedback = str('Navigation to %s' % path[i])
                     self._as.publish_feedback(self._feedback)
                     self.Navigation.move(
                         waypoints[path[i]][0], waypoints[path[i]][1], waypoints[path[i]][2], waypoints[path[i]][3])
+
+                self.navigation_goal_info_pub.publish(path[i])  # 傳送已經到達的導航點，會要傳"已經到達的導航點"是因為要後續在重新啟動時，讓程式知道車子是在走直線時出問題的，還是是在自轉時出問題的
+                self.robot_reset_mode = False   #把此變數設成False，因為在使用重新起動後，會影響到的只會在重新起動後繼續規劃斷線前的路徑而已
                 
 
         elif msg.target_pose != None:
