@@ -391,10 +391,10 @@ class cmd_vel():
             twist.angular.z =0.2
         elif twist.angular.z < -0.2:
             twist.angular.z =-0.2
-        if twist.linear.x > 0 and twist.linear.x < 0.02:
-            twist.linear.x =0.05
-        elif twist.linear.x < 0 and twist.linear.x > -0.02:
-            twist.linear.x =-0.05   
+        if twist.linear.x > 0 and twist.linear.x < 0.1:
+            twist.linear.x =0.1
+        elif twist.linear.x < 0 and twist.linear.x > -0.1:
+            twist.linear.x =-0.1   
 
         if twist.linear.x > 0.2:
             twist.linear.x =0.2
