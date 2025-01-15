@@ -17,8 +17,8 @@
               type: laser_filters/LaserScanAngularBoundsFilter
               params:
                 <!-- ＋,— 30度 -->
-                lower_angle: -0.436111      <!-- -0.261799 -->      <!-- -0.523333 -->
-                upper_angle: 0.436111       <!-- 0.261799 -->       <!-- 0.523333 -->
+                lower_angle: -0.436111      <!-- -0.261799 -->      <!-- -0.523333 -->      <!-- -0.436111 -->
+                upper_angle: 0.436111       <!-- 0.261799 -->       <!-- 0.523333 -->       <!-- 0.436111 -->
             <!-- - name: median_filter
               type: laser_filters/MedianFilter
               params:
@@ -30,7 +30,7 @@
     </node>
 
     <node name="laser_scan_obstacle_detection" pkg="laser_scan_obstacle_detection" type="laser_scan_obstacle_detection" output="screen">
-        <param name="stop_distance" type="double" value="1.1"/>
+        <param name="stop_distance" type="double" value="0.7"/>    <!-- 0.95 -->
         <param name="publisher_topic_name" type="str" value="/cmd_vel_robot"/>
     </node>
 
