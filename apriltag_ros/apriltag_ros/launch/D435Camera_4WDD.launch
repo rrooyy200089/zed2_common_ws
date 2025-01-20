@@ -1,6 +1,6 @@
 <launch>
   <!--TF base_footprint to front/rear_camera_link-->
-  <node pkg="tf" type="static_transform_publisher" name="base_link_to_cameraUP_link" args="0.055 0.2 0.42 0 0 0  /base_link  /cameraUP_link 100 "/>
+  <node pkg="tf" type="static_transform_publisher" name="base_link_to_cameraUP_link" args="-0.055 -0.2 0.42 0 0 0  /base_link  /cameraUP_link 100 "/>
   
   <!--Intel RealSense D435 Node-->
   <include file="$(find realsense2_camera)/launch/rs_camera.launch">
