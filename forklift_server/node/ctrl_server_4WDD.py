@@ -32,14 +32,14 @@ def AprilTag_up_client(msg):
     client.wait_for_result()
     return client.get_result()
 
-def AprilTag_down_client(msg):
-    client = actionlib.SimpleActionClient('AprilTag_down_server', apriltag_ros.msg.AprilTagAction)
-    client.wait_for_server()
-    goal = apriltag_ros.msg.AprilTagGoal(goal=msg)
-    # print("send ", goal)
-    client.send_goal(goal)
-    client.wait_for_result()
-    return client.get_result()
+# def AprilTag_down_client(msg):
+#     client = actionlib.SimpleActionClient('AprilTag_down_server', apriltag_ros.msg.AprilTagAction)
+#     client.wait_for_server()
+#     goal = apriltag_ros.msg.AprilTagGoal(goal=msg)
+#     # print("send ", goal)
+#     client.send_goal(goal)
+#     client.wait_for_result()
+#     return client.get_result()
 
 if __name__ == '__main__':
     rospy.init_node('ctrl_server')
