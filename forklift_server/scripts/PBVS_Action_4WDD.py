@@ -13,9 +13,6 @@ class Action():
         self.Subscriber = Subscriber
         self.NearbySequence = Enum('NearbySequence', 'initial_turn go_straight turn_right parking ')
         self.current_nearby_sequence = self.NearbySequence.initial_turn.value
-        # fork_cmd
-        # self.pub_fork = rospy.Publisher('/cmd_fork', meteorcar, queue_size = 1)
-        # self.fork_msg = meteorcar()
         # Odometry_param
         self.is_odom_received = False
         self.robot_2d_pose_x = 0.0
@@ -31,10 +28,6 @@ class Action():
         self.initial_marker_pose_x = 0.0
         self.initial_marker_pose_y = 0.0
         self.initial_marker_pose_theta = 0.0
-        # Fork_param
-        # self.forwardbackpostion = 0.0
-        # self.updownposition = 0.0
-        # self.fork_threshold = 0.005
         # other
         self.check_wait_time = 0
         self.is_triggered = False
@@ -42,61 +35,7 @@ class Action():
     def SpinOnce(self):
         (self.robot_2d_pose_x, self.robot_2d_pose_y, self.robot_2d_theta, \
          self.marker_2d_pose_x, self.marker_2d_pose_y, self.marker_2d_theta)=self.Subscriber.SpinOnce()
-    
-    
-    # def update_fork(self):
-    #     self.updownposition = self.Subscriber.SpinOnce_fork()
-    
-    # def fork_updown_finetune(self, desired_updownposition, fork_threshold):
-    #     self.update_fork()
-        
-    #     while(abs(self.updownposition - desired_updownposition) > fork_threshold ):
-    #         if self.updownposition < desired_updownposition - fork_threshold:
                 
-    #             self.pub_fork.publish(self.forkmotion.up.value)
-    #             rospy.sleep(0.2)
-    #             self.pub_fork.publish(self.forkmotion.stop.value)
-    #         elif self.updownposition > desired_updownposition + fork_threshold:
-                
-    #             self.pub_fork.publish(self.forkmotion.down.value)
-    #             rospy.sleep(0.05)
-    #             self.pub_fork.publish(self.forkmotion.stop.value)
-    #         rospy.sleep(0.7)
-    #         self.update_fork()
-    #     print(self.updownposition, desired_updownposition)
-
-
-    # def fork_updown(self, desired_updownposition):#0~2.7
-    #     if(desired_updownposition < 0):
-    #         return True
-        
-    #     self.update_fork()
-    #     if self.updownposition < desired_updownposition - self.fork_threshold:
-    #         self.fork_msg.fork_velocity = 2000.0
-    #         self.pub_fork.publish(self.fork_msg)
-    #         return False
-    #     elif self.updownposition > desired_updownposition + self.fork_threshold:
-    #         self.fork_msg.fork_velocity = -2000.0
-    #         self.pub_fork.publish(self.fork_msg)
-    #         return False
-    #     else:
-    #         self.fork_msg.fork_velocity = 0.0
-    #         self.pub_fork.publish(self.fork_msg)
-    #         return True
-    
-
-    # def fork_forwardback(self, desired_forwardbackpostion):# 0~0.7
-    #     self.update_fork()
-    #     if self.forwardbackpostion < desired_forwardbackpostion - self.fork_threshold*1.5:
-    #         self.pub_fork.publish(self.forkmotion.forward.value)
-    #         return False
-    #     elif self.forwardbackpostion > desired_forwardbackpostion + self.fork_threshold*1.5:
-    #         self.pub_fork.publish(self.forkmotion.backword.value)
-    #         return False
-    #     else:
-    #         self.pub_fork.publish(self.forkmotion.stop.value)
-    #         return True
-            
     def fnSeqChangingDirection(self, desired_angle):
         self.SpinOnce()
         desired_angle_turn = -1. *  math.atan2(self.marker_2d_pose_y, self.marker_2d_pose_x)
@@ -305,30 +244,6 @@ class Action():
             return True
         else:
             return False
-
-    # def fnseqdead_reckoning(self, dead_reckoning_dist):#(使用里程紀計算)移動到離現在位置dead_reckoning_dist公尺的地方
-    #     self.SpinOnce()
-    #     if self.is_triggered == False:
-    #         self.is_triggered = True
-    #         self.initial_robot_pose_x = self.robot_2d_pose_x
-    #         self.initial_robot_pose_y = self.robot_2d_pose_y
-    #     dist = math.copysign(1, dead_reckoning_dist) * self.fnCalcDistPoints(self.initial_robot_pose_x, self.robot_2d_pose_x, self.initial_robot_pose_y, self.robot_2d_pose_y)
-    #     if math.copysign(1, dead_reckoning_dist) > 0.0:
-    #         if  dead_reckoning_dist - dist < 0.0:
-    #             self.cmd_vel.fnStop()
-    #             self.is_triggered = False
-    #             return True
-    #         else:
-    #             self.cmd_vel.fnGoStraight(-(dead_reckoning_dist - dist))
-    #             return False
-    #     elif math.copysign(1, dead_reckoning_dist) < 0.0:
-    #         if  dead_reckoning_dist - dist > 0.0:
-    #             self.cmd_vel.fnStop()
-    #             self.is_triggered = False
-    #             return True
-    #         else:
-    #             self.cmd_vel.fnGoStraight(-(dead_reckoning_dist - dist))
-    #             return False
 
     def fnseqmove_to_marker_dist(self, marker_dist): #(使用marker)前後移動到距離marker_dist公尺的位置
         self.SpinOnce()

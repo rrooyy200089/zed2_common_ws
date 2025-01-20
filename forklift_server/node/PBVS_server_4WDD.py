@@ -21,12 +21,8 @@ class Subscriber():
     def __init__(self):
         odom = rospy.get_param(rospy.get_name() + "/odom", "/odom")
         tag_detections = rospy.get_param(rospy.get_name() + "/tag_detections_topic", "/tag_detections")
-        # tag_detections_down = rospy.get_param(rospy.get_name() + "/tag_detections_down", "/tag_detections_down")
-        # forkpos = rospy.get_param(rospy.get_name() + "/forkpos", "/forkpos")
         self.sub_info_marker = rospy.Subscriber(tag_detections, AprilTagDetectionArray, self.cbGetMarker, queue_size = 1)
-        # self.sub_info_marker = rospy.Subscriber(tag_detections_down, AprilTagDetectionArray, self.cbGetMarker_down, queue_size = 1)
         self.sub_odom_robot = rospy.Subscriber(odom, Odometry, self.cbGetRobotOdom, queue_size = 1)
-        # self.sub_forwardbackpostion = rospy.Subscriber(forkpos, meteorcar, self.cbGetforkpos, queue_size = 1)
         self.ekf_theta = KalmanFilter()
         self.init_parame()
 
@@ -44,8 +40,6 @@ class Subscriber():
         self.marker_2d_pose_x = 0.0
         self.marker_2d_pose_y = 0.0
         self.marker_2d_theta = 0.0
-        # Forklift_param
-        # self.updownposition = 0.0
         #ekf
         self.ekf_theta.init(1,1,5)
     def __del__(self):
@@ -54,9 +48,7 @@ class Subscriber():
     def SpinOnce(self):
         return self.robot_2d_pose_x, self.robot_2d_pose_y, self.robot_2d_theta, \
                self.marker_2d_pose_x, self.marker_2d_pose_y, self.marker_2d_theta
-    # def SpinOnce_fork(self):
-    #     return self.updownposition
-
+    
     def cbGetMarker(self, msg):
         try:
             if self.updown == True:
@@ -72,23 +64,6 @@ class Subscriber():
                 pass
         except:
             pass
-
-    # def cbGetMarker_down(self, msg):
-    #     try:
-    #         if self.updown == False:
-    #             # print("down tag")
-    #             marker_msg = msg.detections[0].pose.pose.pose
-    #             quaternion = (marker_msg.orientation.x, marker_msg.orientation.y, marker_msg.orientation.z, marker_msg.orientation.w)
-    #             theta = tf.transformations.euler_from_quaternion(quaternion)[1]
-    #             theta = self.ekf_theta.update(theta)
-    #             self.marker_2d_pose_x = -marker_msg.position.z
-    #             self.marker_2d_pose_y = marker_msg.position.x + self.offset_x
-    #             self.marker_2d_theta = -theta
-
-    #         else:
-    #             pass
-    #     except:
-    #         pass
 
     def cbGetRobotOdom(self, msg):
         if self.is_odom_received == False:
@@ -116,9 +91,6 @@ class Subscriber():
         self.previous_robot_2d_theta = self.robot_2d_theta
 
         self.robot_2d_theta = self.total_robot_2d_theta
-
-    # def cbGetforkpos(self, msg):
-    #     self.updownposition = msg.fork_position
 
  
 class PBVSAction():
