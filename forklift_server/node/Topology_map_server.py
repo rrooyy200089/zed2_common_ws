@@ -242,13 +242,9 @@ class TopologyMapAction():
     def init_param(self):
         global waypoints
         global graph
-        self.robot_reset_mode = rospy.get_param("/robot_reset", False)
-        start_node_buf = rospy.get_param("/robot_goal", "P1")
-        if self.robot_reset_mode and start_node_buf != '' :
-            self.start_node = start_node_buf
-        else :
-            self.start_node = rospy.get_param(rospy.get_name() + "/start_node", "LD3")
-            self.robot_reset_mode = False   # 如果start_node_buf = ''，代表自走車是在前往第一個導航點的過程中時被重新啟動的，此時就不用讓自走車在導航時跳過路徑規劃的第一個導航點
+        robot_reset_mode_buf = rospy.get_param("/robot_reset", False)
+        self.start_node = rospy.get_param("/robot_goal", "P1") if robot_reset_mode_buf else rospy.get_param(rospy.get_name() + "/start_node", "LD3")
+        self.robot_reset_mode = False if self.start_node == "P1" else robot_reset_mode_buf
         # print(self.start_node)
         waypoints = rospy.get_param(rospy.get_name() + "/waypoints")
         graph = rospy.get_param(rospy.get_name() + "/graph")
