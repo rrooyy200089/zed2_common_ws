@@ -39,7 +39,7 @@ class Action():
     def fnSeqChangingDirection(self, desired_angle):
         self.SpinOnce()
         desired_angle_turn = -1. *  math.atan2(self.marker_2d_pose_y, self.marker_2d_pose_x)
-        print(desired_angle_turn)
+        # print(desired_angle_turn)
         
         if desired_angle_turn <0:
             desired_angle_turn = desired_angle_turn + math.pi
@@ -271,7 +271,7 @@ class Action():
         marker_2d_theta_list = [0.0]
         initial_time = rospy.Time.now().secs
         
-        while(abs(initial_time - rospy.Time.now().secs) < time):
+        while(abs(initial_time - rospy.Time.now().secs) <= time):
             self.SpinOnce()
             marker_2d_theta_list.append(self.marker_2d_theta)
             # print("self.marker_2d_theta", self.marker_2d_theta)
@@ -287,7 +287,7 @@ class Action():
             if(i > downcutoff and i < upcutoff):
                clean_list.append(i)
                
-        return statistics.median(clean_list) 
+        return statistics.median(clean_list)
      
 class cmd_vel():
     def __init__(self):
@@ -302,10 +302,10 @@ class cmd_vel():
             twist.angular.z =0.2
         elif twist.angular.z < -0.2:
             twist.angular.z =-0.2
-        if twist.linear.x > 0 and twist.linear.x < 0.02:
-            twist.linear.x =0.05
-        elif twist.linear.x < 0 and twist.linear.x > -0.02:
-            twist.linear.x =-0.05   
+        if twist.linear.x > 0 and twist.linear.x < 0.05:
+            twist.linear.x =0.08
+        elif twist.linear.x < 0 and twist.linear.x > -0.05:
+            twist.linear.x =-0.08   
 
         if twist.linear.x > 0.2:
             twist.linear.x =0.2
@@ -379,10 +379,10 @@ class cmd_vel():
 
 
     def fnTrackMarker(self, theta):
-        Kp = 4.0 #6.5
+        Kp = 5.0 #6.5
 
         twist = Twist()
-        twist.linear.x = 0.05
+        twist.linear.x = 0.1
         twist.linear.y = 0
         twist.linear.z = 0
         twist.angular.x = 0
