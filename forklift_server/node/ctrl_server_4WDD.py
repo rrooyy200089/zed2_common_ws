@@ -23,8 +23,8 @@ def TopologyMap_client(msg):
     client.wait_for_result()
     return client.get_result()
 
-def AprilTag_up_client(msg):
-    client = actionlib.SimpleActionClient('AprilTag_up_server', apriltag_ros.msg.AprilTagAction)
+def AprilTag_client(msg):
+    client = actionlib.SimpleActionClient('AprilTag_server', apriltag_ros.msg.AprilTagAction)
     client.wait_for_server()
     goal = apriltag_ros.msg.AprilTagGoal(goal=msg)
     # print("send ", goal)
@@ -53,21 +53,13 @@ if __name__ == '__main__':
         rospy.sleep(1)
         if(msg[0] == 'PBVS'):
             rospy.logwarn("send PBVS: %s", msg[1])
-            if(msg[1] == 'parking_bodycamera' or msg[1] == 'drop_pallet'):
-                result = AprilTag_up_client(True)
-                print("AprilTag_up_client result ", result)
+            if(msg[1] == 'parking_bodycamera'):
+                result = AprilTag_client(True)
+                print("AprilTag_client result ", result)
                 result = PBVS_client(msg[1])
                 print("PBVS_client result ", result)
-                result = AprilTag_up_client(False)
-                print("AprilTag_up_client result ", result)
-
-            elif(msg[1] == 'parking_forkcamera' or msg[1] == 'raise_pallet'):
-                result = AprilTag_down_client(True)
-                print("AprilTag_down_client result ", result)
-                result = PBVS_client(msg[1])
-                print("PBVS_client result ", result)
-                result = AprilTag_down_client(False)
-                print("AprilTag_down_client result ", result)
+                result = AprilTag_client(False)
+                print("AprilTag_client result ", result)
 
         elif(msg[0] == 'TopologyMap'):
             rospy.logwarn("send TopologyMap: %s", msg[1])
