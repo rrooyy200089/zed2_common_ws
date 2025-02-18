@@ -47,7 +47,7 @@ class Action():
             desired_angle_turn = desired_angle_turn - math.pi
 
         self.cmd_vel.fnTurn(desired_angle_turn)
-        
+        # print(abs(desired_angle_turn))
         if abs(desired_angle_turn) < desired_angle  :
             self.cmd_vel.fnStop()
             if self.check_wait_time > 10 :
@@ -61,16 +61,18 @@ class Action():
             return False
         
     def fnSeqChangingtheta(self, threshod):
-        self.SpinOnce()
-        self.marker_2d_theta= self.TrustworthyMarker2DTheta(1)
-        desired_angle_turn = -self.marker_2d_theta
-        if abs(desired_angle_turn) < threshod  :
-            self.cmd_vel.fnStop()
-            rospy.sleep(0.1)
-            return True
-        else:
-            self.TurnByTime(desired_angle_turn*2, 1)
-            return False
+        if self.Subscriber.flag:
+            self.SpinOnce()
+            self.marker_2d_theta= self.TrustworthyMarker2DTheta(1)
+            desired_angle_turn = -self.marker_2d_theta
+            if abs(desired_angle_turn) < threshod  :
+                self.cmd_vel.fnStop()
+                rospy.sleep(0.1)
+                return True
+            else:
+                self.TurnByTime(desired_angle_turn*2, 1)
+                return False
+        else: return None
         
     def TurnByTime(self, desired_angle_turn, time):
         initial_time = rospy.Time.now().secs
@@ -207,62 +209,68 @@ class Action():
         return False
 
     def fnSeqParking(self, parking_dist):
-        self.SpinOnce()
-        desired_angle_turn = math.atan2(self.marker_2d_pose_y - 0, self.marker_2d_pose_x - 0)
-
-
-        if desired_angle_turn <0:
-            desired_angle_turn = desired_angle_turn + math.pi
-        else:
-            desired_angle_turn = desired_angle_turn - math.pi
-
-
-        self.cmd_vel.fnTrackMarker(-desired_angle_turn)
-
-        if (abs(self.marker_2d_pose_x) < parking_dist)  :
-            self.cmd_vel.fnStop()
-            if self.check_wait_time > 10:
-                self.check_wait_time = 0
-                return True
+        if self.Subscriber.flag:
+            self.SpinOnce()
+            desired_angle_turn = math.atan2(self.marker_2d_pose_y - 0, self.marker_2d_pose_x - 0)
+            if desired_angle_turn <0:
+                desired_angle_turn = desired_angle_turn + math.pi
             else:
-                self.check_wait_time =self.check_wait_time  +1
-        elif (abs(self.marker_2d_pose_x) < parking_dist) and self.check_wait_time:
-            self.cmd_vel.fnStop()
-            if self.check_wait_time > 10:
-                self.check_wait_time = 0
-                return True
+                desired_angle_turn = desired_angle_turn - math.pi
+
+
+            self.cmd_vel.fnTrackMarker(-desired_angle_turn)
+
+            if (abs(self.marker_2d_pose_x) < parking_dist)  :
+                self.cmd_vel.fnStop()
+                if self.check_wait_time >= 5:
+                    self.check_wait_time = 0
+                    return True
+                else:
+                    self.check_wait_time =self.check_wait_time  +1
+            elif (abs(self.marker_2d_pose_x) < parking_dist) and self.check_wait_time:
+                self.cmd_vel.fnStop()
+                if self.check_wait_time >= 5:
+                    self.check_wait_time = 0
+                    return True
+                else:
+                    self.check_wait_time =self.check_wait_time  +1
             else:
-                self.check_wait_time =self.check_wait_time  +1
-        else:
-            self.check_wait_time =0
-            return False
+                self.check_wait_time =0
+                return False
+            
+        else: return None
         
     def fnSeqdecide(self, decide_dist):#decide_dist偏離多少公分要後退
-        self.SpinOnce()
-        dist = self.marker_2d_pose_y
-        if  abs(dist) < abs(decide_dist):
-            return True
-        else:
-            return False
+        if self.Subscriber.flag:
+            self.SpinOnce()
+            dist = self.marker_2d_pose_y
+            if  abs(dist) < abs(decide_dist):
+                return True
+            else:
+                return False
+        else: return None
+        
 
     def fnseqmove_to_marker_dist(self, marker_dist): #(使用marker)前後移動到距離marker_dist公尺的位置
-        self.SpinOnce()
-        if(marker_dist < 2.0):
-            threshold = 0.015
-        else:
-            threshold = 0.03
+        if self.Subscriber.flag:
+            self.SpinOnce()
+            if(marker_dist < 2.0):
+                threshold = 0.015
+            else:
+                threshold = 0.03
 
-        dist = math.sqrt(self.marker_2d_pose_x**2 + self.marker_2d_pose_y**2)
-        
-        if dist < (marker_dist-threshold):
-            self.cmd_vel.fnGoStraight(-(marker_dist - dist))
-            return False
-        elif dist > (marker_dist+threshold):
-            self.cmd_vel.fnGoStraight(-(marker_dist - dist))
-            return False
-        else:
-            self.cmd_vel.fnStop()
-            return True
+            dist = math.sqrt(self.marker_2d_pose_x**2 + self.marker_2d_pose_y**2)
+            
+            if dist < (marker_dist-threshold):
+                self.cmd_vel.fnGoStraight(-(marker_dist - dist))
+                return False
+            elif dist > (marker_dist+threshold):
+                self.cmd_vel.fnGoStraight(-(marker_dist - dist))
+                return False
+            else:
+                self.cmd_vel.fnStop()
+                return True
+        else: return None
             
     def fnCalcDistPoints(self, x1, x2, y1, y2):
         return math.sqrt((x1 - x2) ** 2. + (y1 - y2) ** 2.)

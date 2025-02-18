@@ -40,6 +40,7 @@ class Subscriber():
         self.marker_2d_pose_x = 0.0
         self.marker_2d_pose_y = 0.0
         self.marker_2d_theta = 0.0
+        self.flag = False
         #ekf
         self.ekf_theta.init(1,1,5)
     def __del__(self):
@@ -52,18 +53,19 @@ class Subscriber():
     def cbGetMarker(self, msg):
         try:
             if self.updown == True:
-                # print("up tag")
                 marker_msg = msg.detections[0].pose.pose.pose
+                # print("up tag")
                 quaternion = (marker_msg.orientation.x, marker_msg.orientation.y, marker_msg.orientation.z, marker_msg.orientation.w)
                 theta = tf.transformations.euler_from_quaternion(quaternion)[1]
                 # theta = self.ekf_theta.update(theta)
                 self.marker_2d_pose_x = -marker_msg.position.z
                 self.marker_2d_pose_y = marker_msg.position.x + self.offset_x
                 self.marker_2d_theta = -theta
+                self.flag = True
             else:
                 pass
         except:
-            pass
+            self.flag = False
 
     def cbGetRobotOdom(self, msg):
         if self.is_odom_received == False:
