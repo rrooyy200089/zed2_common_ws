@@ -72,7 +72,9 @@ class Action():
             else:
                 self.TurnByTime(desired_angle_turn*2, 1)
                 return False
-        else: return None
+        else:
+            self.cmd_vel.fnStop() 
+            return None
         
     def TurnByTime(self, desired_angle_turn, time):
         initial_time = rospy.Time.now().secs
@@ -222,14 +224,14 @@ class Action():
 
             if (abs(self.marker_2d_pose_x) < parking_dist)  :
                 self.cmd_vel.fnStop()
-                if self.check_wait_time >= 5:
+                if self.check_wait_time > 10:
                     self.check_wait_time = 0
                     return True
                 else:
                     self.check_wait_time =self.check_wait_time  +1
             elif (abs(self.marker_2d_pose_x) < parking_dist) and self.check_wait_time:
                 self.cmd_vel.fnStop()
-                if self.check_wait_time >= 5:
+                if self.check_wait_time > 10:
                     self.check_wait_time = 0
                     return True
                 else:
@@ -238,7 +240,9 @@ class Action():
                 self.check_wait_time =0
                 return False
             
-        else: return None
+        else:
+            self.cmd_vel.fnStop() 
+            return None
         
     def fnSeqdecide(self, decide_dist):#decide_dist偏離多少公分要後退
         if self.Subscriber.flag:
@@ -270,7 +274,9 @@ class Action():
             else:
                 self.cmd_vel.fnStop()
                 return True
-        else: return None
+        else: 
+            self.cmd_vel.fnStop()
+            return None
             
     def fnCalcDistPoints(self, x1, x2, y1, y2):
         return math.sqrt((x1 - x2) ** 2. + (y1 - y2) ** 2.)
