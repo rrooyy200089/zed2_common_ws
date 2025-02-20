@@ -201,7 +201,7 @@ class Navigation():
         # print('desire_angle = ', desire_angle)
 
         speed = Twist()
-        while(abs(self.odom_pass) < abs(desire_angle) - 0.07):
+        while((abs(self.odom_pass) < abs(desire_angle) - 0.07) and server.navigation_state):
             # print("odom_pass", self.odom_pass*180/math.pi)
             if(desire_angle >= 0):
                 speed.angular.z = (desire_angle-self.odom_pass)*0.4
@@ -234,10 +234,9 @@ class TopologyMapAction():
         self.TopologyMap = TopologyMap(self.start_node)      
         self.Navigation = Navigation()
         self._as = actionlib.SimpleActionServer(self._action_name, forklift_server.msg.TopologyMapAction, execute_cb=self.execute_cb, auto_start = False)
-        self.navigation_state_pub = rospy.Publisher('/NavigationState', Bool, queue_size = 1, latch=True)
         self.navigation_goal_info_pub = rospy.Publisher('/NavigationGoalInfo', String, queue_size=1, latch=True)
+        rospy.Subscriber('/NavigationState', Bool, self.NavigationState, queue_size=1)
         self._as.start()
-        self.before_goal = ''  # 此變數是用來紀錄之前的目標導航點
 
     def init_param(self):
         global waypoints
@@ -248,10 +247,11 @@ class TopologyMapAction():
         # print(self.start_node)
         waypoints = rospy.get_param(rospy.get_name() + "/waypoints")
         graph = rospy.get_param(rospy.get_name() + "/graph")
-        self.last_target_pose = None        
+        self.last_target_pose = None 
+        self.before_goal = ''  # 此變數是用來紀錄之前的目標導航點   
+        self.navigation_state = True    
 
     def execute_cb(self, msg):
-        self.navigation_state_pub.publish(True)
         rospy.loginfo('TopologyMap receive command : %s' % (msg))
         if msg.goal != "" or (msg.target_name != "" and msg.target_pose == None):
             if msg.goal != "":
@@ -279,6 +279,7 @@ class TopologyMapAction():
                     self.Navigation.move(
                         waypoints[path[i]][0], waypoints[path[i]][1], waypoints[path[i]][2], waypoints[path[i]][3])
 
+                if not self.navigation_state: break     # 當執行"重新啟動"時，中止導航
                 self.navigation_goal_info_pub.publish(path[i])  # 傳送已經到達的導航點，會要傳"已經到達的導航點"是因為要後續在重新啟動時，讓程式知道車子是在走直線時出問題的，還是是在自轉時出問題的
                 self.robot_reset_mode = False   #把此變數設成False，因為在使用重新起動後，會影響到的只會在重新起動後繼續規劃斷線前的路徑而已
                 
@@ -302,11 +303,13 @@ class TopologyMapAction():
             self.last_target_pose.orientation.z = orienz
             self.last_target_pose.orientation.w = orienw
         
-        self.navigation_state_pub.publish(False)
         rospy.logwarn('TopologyMap Succeeded')
         self.before_goal = msg.goal  # 紀錄之前所發布的目標導航點
         self._result.result = 'success'
         self._as.set_succeeded(self._result)
+
+    def NavigationState(self, msg):
+        self.navigation_state = msg.data
 
 
 class MarkerViewer():
