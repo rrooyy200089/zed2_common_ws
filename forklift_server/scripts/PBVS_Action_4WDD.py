@@ -325,10 +325,10 @@ class cmd_vel():
             twist.linear.x =0.2
         elif twist.linear.x < -0.2:
             twist.linear.x =-0.2                     
-        if twist.angular.z > 0 and twist.angular.z < 0.1:
-            twist.angular.z =0.1
-        elif twist.angular.z < 0 and twist.angular.z > -0.1:
-            twist.angular.z =-0.1
+        if twist.angular.z > 0 and twist.angular.z < 0.08:
+            twist.angular.z =0.08
+        elif twist.angular.z < 0 and twist.angular.z > -0.08:
+            twist.angular.z =-0.08
         self.pub_cmd_vel.publish(twist)
 
     def fnStop(self):
@@ -343,7 +343,7 @@ class cmd_vel():
         self.cmd_pub(twist)
 
     def fnTurn(self, theta):
-        Kp = 0.3 #1.0
+        Kp = 0.2 #1.0
         angular_z = Kp * theta
         
 
@@ -393,7 +393,7 @@ class cmd_vel():
 
 
     def fnTrackMarker(self, theta):
-        Kp = 5.0 #6.5
+        Kp = 4.0 #6.5
 
         twist = Twist()
         twist.linear.x = 0.1
