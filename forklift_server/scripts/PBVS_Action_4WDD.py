@@ -61,7 +61,7 @@ class Action():
             return False
         
     def fnSeqChangingtheta(self, threshod):
-        if self.Subscriber.flag:
+        if self.Subscriber.flag or True:
             self.SpinOnce()
             self.marker_2d_theta= self.TrustworthyMarker2DTheta(1)
             desired_angle_turn = -self.marker_2d_theta
@@ -72,9 +72,9 @@ class Action():
             else:
                 self.TurnByTime(desired_angle_turn*2, 1)
                 return False
-        else:
-            self.cmd_vel.fnStop() 
-            return None
+        # else:
+        #     self.cmd_vel.fnStop() 
+        #     return None
         
     def TurnByTime(self, desired_angle_turn, time):
         initial_time = rospy.Time.now().secs
@@ -121,7 +121,7 @@ class Action():
                 # print("initial_marker_pose_theta ", self.initial_marker_pose_theta)
                 # decide doing fnSeqMovingNearbyParkingLot or not
                 desired_dist = -1* self.initial_marker_pose_x * abs(math.cos((math.pi / 2.) - self.initial_marker_pose_theta))
-                if abs(desired_dist) < 0.15:
+                if abs(desired_dist) < 0.2: # 0.15
                     return True
             
             if self.initial_marker_pose_theta < 0.0:
@@ -136,7 +136,7 @@ class Action():
 
             if abs(desired_angle_turn) < 0.03:
                 self.cmd_vel.fnStop()
-                if self.check_wait_time >10:
+                if self.check_wait_time >20:
                     self.check_wait_time = 0
                     self.current_nearby_sequence = self.NearbySequence.go_straight.value
                     self.is_triggered = False
@@ -144,7 +144,7 @@ class Action():
                     self.check_wait_time =self.check_wait_time +1
             elif abs(desired_angle_turn) < 0.045 and self.check_wait_time :
                 self.cmd_vel.fnStop()
-                if self.check_wait_time > 10:
+                if self.check_wait_time > 20:
                     self.check_wait_time = 0
                     self.current_nearby_sequence = self.NearbySequence.go_straight.value
                     self.is_triggered = False
@@ -190,7 +190,7 @@ class Action():
             self.cmd_vel.fnTurn(desired_angle_turn)
             if abs(desired_angle_turn) < 0.03:
                 self.cmd_vel.fnStop()
-                if self.check_wait_time > 20:
+                if self.check_wait_time > 10:
                     self.check_wait_time = 0
                     self.current_nearby_sequence = self.NearbySequence.parking.value
                     self.is_triggered = False
@@ -199,7 +199,7 @@ class Action():
                     self.check_wait_time =self.check_wait_time  +1
             elif abs(desired_angle_turn) < 0.045 and self.check_wait_time:
                 self.cmd_vel.fnStop()
-                if self.check_wait_time > 20:
+                if self.check_wait_time > 10:
                     self.check_wait_time = 0
                     self.current_nearby_sequence = self.NearbySequence.parking.value
                     self.is_triggered = False
@@ -229,13 +229,13 @@ class Action():
                     return True
                 else:
                     self.check_wait_time =self.check_wait_time  +1
-            elif (abs(self.marker_2d_pose_x) < parking_dist) and self.check_wait_time:
-                self.cmd_vel.fnStop()
-                if self.check_wait_time > 10:
-                    self.check_wait_time = 0
-                    return True
-                else:
-                    self.check_wait_time =self.check_wait_time  +1
+            # elif (abs(self.marker_2d_pose_x) < parking_dist) and self.check_wait_time:
+            #     self.cmd_vel.fnStop()
+            #     if self.check_wait_time > 10:
+            #         self.check_wait_time = 0
+            #         return True
+            #     else:
+            #         self.check_wait_time =self.check_wait_time  +1
             else:
                 self.check_wait_time =0
                 return False
@@ -312,23 +312,32 @@ class cmd_vel():
         if not self.front:
             twist.linear.x = -twist.linear.x
 
-        if twist.angular.z > 0.2:
-            twist.angular.z =0.2
-        elif twist.angular.z < -0.2:
-            twist.angular.z =-0.2
-        if twist.linear.x > 0 and twist.linear.x < 0.05:
-            twist.linear.x =0.08
-        elif twist.linear.x < 0 and twist.linear.x > -0.05:
-            twist.linear.x =-0.08   
+        if twist.linear.x == 0:
+            if twist.angular.z > 0.2:
+                twist.angular.z = 0.2
+            elif twist.angular.z < -0.2:
+                twist.angular.z = -0.2
+            elif twist.angular.z > 0 and twist.angular.z < 0.1:
+                twist.angular.z = 0.1
+            elif twist.angular.z < 0 and twist.angular.z > -0.1:
+                twist.angular.z = -0.1
+        else :
+            if twist.angular.z > 0.08:
+                twist.angular.z = 0.08
+            elif twist.angular.z < -0.08:
+                twist.angular.z = -0.08
+            elif abs(twist.angular.z) < 0.05:
+                twist.angular.z = 0.0
 
         if twist.linear.x > 0.2:
-            twist.linear.x =0.2
+            twist.linear.x = 0.2
         elif twist.linear.x < -0.2:
-            twist.linear.x =-0.2                     
-        if twist.angular.z > 0 and twist.angular.z < 0.08:
-            twist.angular.z =0.08
-        elif twist.angular.z < 0 and twist.angular.z > -0.08:
-            twist.angular.z =-0.08
+            twist.linear.x = -0.2
+        elif twist.linear.x > 0 and twist.linear.x < 0.05:
+            twist.linear.x = 0.05
+        elif twist.linear.x < 0 and twist.linear.x > -0.05:
+            twist.linear.x = -0.05  
+
         self.pub_cmd_vel.publish(twist)
 
     def fnStop(self):
@@ -345,7 +354,7 @@ class cmd_vel():
     def fnTurn(self, theta):
         Kp = 0.2 #1.0
         angular_z = Kp * theta
-        
+        # if abs(angular_z)  < 0.05: angular_z=0.05
 
         twist = Twist()
         twist.linear.x = 0
@@ -379,18 +388,6 @@ class cmd_vel():
         twist.angular.z = 0
 
         self.cmd_pub(twist)
-
-    def fnfork(self,direction):
-        twist = Twist()
-        twist.linear.x = 0
-        twist.linear.y = 0
-        twist.linear.z = 0
-        twist.angular.x = 0
-        twist.angular.y = direction
-        twist.angular.z = 0
-
-        self.cmd_pub(twist)
-
 
     def fnTrackMarker(self, theta):
         Kp = 4.0 #6.5

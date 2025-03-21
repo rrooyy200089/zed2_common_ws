@@ -2,7 +2,7 @@
 <node pkg="forklift_server" type="ctrl_server_4WDD.py" name="ctrl_server" output="screen">
     <rosparam param="command">
     [
-        <!-- ['TopologyMap', 'Pick3Before'],導航到Pick3Before/ -->
+        <!-- ['TopologyMap', 'P6'], -->
         <!-- ['PBVS', 'parking_forkcamera'],使用牙叉相機對位棧板/ -->
         <!-- ['PBVS', 'raise_pallet'],叉起棧板/ -->
         <!-- ['TopologyMap', 'Place3Before'],導航到Place3Before/ -->

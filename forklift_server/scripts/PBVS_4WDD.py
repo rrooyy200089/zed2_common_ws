@@ -75,33 +75,35 @@ class PBVS():
             # ============parking============
         if self.current_parking_sequence == self.ParkingSequence.changing_direction_1.value:
             self.is_sequence_finished = self.Action.fnSeqChangingDirection(self.ChangingDirection_threshold)
+            print("here-1")
             if self.is_sequence_finished == True:
                 self.current_parking_sequence = self.ParkingSequence.moving_nearby_parking_lot.value
                 self.is_sequence_finished = False
 
         elif self.current_parking_sequence == self.ParkingSequence.moving_nearby_parking_lot.value:
             self.is_sequence_finished = self.Action.fnSeqMovingNearbyParkingLot()
+            print("here-2")
             if self.is_sequence_finished == True:
                 self.current_parking_sequence = self.ParkingSequence.parking.value
                 self.is_sequence_finished = False
 
         elif self.current_parking_sequence == self.ParkingSequence.parking.value:
             self.is_sequence_finished = self.Action.fnSeqParking(self.Parking_distance)
-            
+            print("here-3")
             if self.is_sequence_finished == True:
                 self.current_parking_sequence = self.ParkingSequence.Changingtheta.value
                 self.is_sequence_finished = False
 
         elif self.current_parking_sequence == self.ParkingSequence.Changingtheta.value:
             self.is_sequence_finished = self.Action.fnSeqChangingtheta(self.Changingtheta_threshod)
-            
+            print("here-4")
             if self.is_sequence_finished == True:
                 self.current_parking_sequence = self.ParkingSequence.decide.value
                 self.is_sequence_finished = False
 
         elif self.current_parking_sequence == self.ParkingSequence.decide.value:
             self.is_sequence_finished = self.Action.fnSeqdecide(self.decide_distance)
-            
+            print("here-5")
             if self.is_sequence_finished == True:
                 self.current_parking_sequence = self.ParkingSequence.stop.value
                 self.is_sequence_finished = False
@@ -120,7 +122,7 @@ class PBVS():
 
         elif self.current_parking_sequence == self.ParkingSequence.back.value:
             self.is_sequence_finished = self.Action.fnseqmove_to_marker_dist(self.back_distance)
-            
+            print("here-6")
             if self.is_sequence_finished == True:
                 self.current_parking_sequence = self.ParkingSequence.parking.value
                 self.is_sequence_finished = False

@@ -62,8 +62,6 @@ class Subscriber():
                 self.marker_2d_pose_y = marker_msg.position.x + self.offset_x
                 self.marker_2d_theta = -theta
                 self.flag = True
-            else:
-                pass
         except:
             self.flag = False
 
