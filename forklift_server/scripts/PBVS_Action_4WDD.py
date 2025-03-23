@@ -305,7 +305,7 @@ class Action():
      
 class cmd_vel():
     def __init__(self):
-        self.pub_cmd_vel = rospy.Publisher('/cmd_vel_robot', Twist, queue_size = 1)
+        self.pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size = 1)
         self.front = False
 
     def cmd_pub(self, twist):

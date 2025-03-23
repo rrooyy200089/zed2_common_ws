@@ -3,6 +3,7 @@
 #include <sensor_msgs/LaserScan.h>
 #include <geometry_msgs/Twist.h>
 #include <string>
+#include <unistd.h>
 using namespace std;
 
 ros::Publisher cmd_vel_robot_pub;
@@ -28,6 +29,7 @@ void ActionControl()
         cmd_vel_robot.angular.z = 0.0;
         // enable = false;
         ROS_INFO("Closest obstacle");
+        sleep(1);
     }
     else
     {
